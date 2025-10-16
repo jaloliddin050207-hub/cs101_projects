@@ -30,6 +30,12 @@ textbook_discount=subtotal*0.25*(is_textbook_order==True)
 faculty_better=faculty_discount>=textbook_discount
 textbook_better=textbook_discount>faculty_discount
 main_discount=bool(faculty_discount*(faculty_better==True)+textbook_discount*(textbook_better==True))
+order_applied=(textbook_discount>=faculty_discount)*is_faculty_staff
+faculty_applied=(faculty_discount>textbook_discount)*is_faculty_staff
+applied_discount=("Order discount")*order_applied+faculty_applied*("Faculty discount")
+applied_discount_name=applied_discount or "No Discount"
+
+
 bulk_discount=subtotal*0.08*(book_number>=10)
 total_discounts = main_discount + bulk_discount
 small_order_fee=(book_number<3)*10000
@@ -42,9 +48,15 @@ print("\n----- RECEIPT -----")
 print("Customer name:",customer_name)
 print("Faculty/Staff:", is_faculty_staff)
 print("Textbook order:", is_textbook_order)
+print("1.", title1, "—", quantity1, "*", price1, "=", quantity1 * price1)
+print("2.", title2, "—", quantity2, "*", price2, "=", quantity2 * price2)
+print("3.", title3, "—", quantity3, "*", price3, "=", quantity3 * price3)
 print("Subtotal:", subtotal)
 print("Faculty discount:", faculty_discount)
+print("Eligibility: ", is_faculty_staff)
 print("Textbook discount:", textbook_discount)
+print("Eligibility: ", is_textbook_order)
+print("Applied discount: ", applied_discount_name)
 print("Main discount:", main_discount)
 print("Bulk discount:", bulk_discount)
 print("Total discount:", total_discounts)
@@ -53,5 +65,7 @@ print("Tax:", tax_fee)
 print("Shipping:", shipping)
 print("Final total:", final_total)
 print("Net savings:", net_savings)
+
+
 
 
