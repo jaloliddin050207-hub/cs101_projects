@@ -2,22 +2,22 @@
 print("University Bookstore Checkout")
 
 # Collect book title, price and quantity for 3 books
-title1 = input("Enter title of book #1: ")
-price1 = float(input("Enter price of book #1: "))
-quantity1 = int(input("Enter quantity of book #1: "))
+title1 = input("Enter title of book #1:\n")
+price1 = float(input("Enter price of book #1:\n"))
+quantity1 = int(input("Enter quantity of book #1:\n"))
 
-title2 = input("Enter title of book #2: ")
-price2 = float(input("Enter price of book #2: "))
-quantity2 = int(input("Enter quantity of book #2: "))
+title2 = input("Enter title of book #2:\n")
+price2 = float(input("Enter price of book #2:\n"))
+quantity2 = int(input("Enter quantity of book #2:\n"))
 
-title3 = input("Enter title of book #3: ")
-price3 = float(input("Enter price of book #3: "))
-quantity3 = int(input("Enter quantity of book #3: "))
+title3 = input("Enter title of book #3:\n")
+price3 = float(input("Enter price of book #3:\n"))
+quantity3 = int(input("Enter quantity of book #3\n"))
 
 # Get customer information
-customer_name = input("Enter customer name: ")
-is_faculty_staff = input("Is customer faculty/staff? (yes/no): ")
-is_textbook_order = input("Is this a textbook order? (yes/no): ")
+customer_name = input("Your name:\n")
+is_faculty_staff = input("Is customer faculty/staff? (yes/no):\n ")
+is_textbook_order = input("Is this a textbook order? (yes/no):\n ")
 
 is_faculty_staff = (is_faculty_staff == "yes")
 is_textbook_order = (is_textbook_order == "yes")
@@ -34,8 +34,6 @@ order_applied=(textbook_discount>=faculty_discount)*is_faculty_staff
 faculty_applied=(faculty_discount>textbook_discount)*is_faculty_staff
 applied_discount=("Order discount")*order_applied+faculty_applied*("Faculty discount")
 applied_discount_name=applied_discount or "No Discount"
-
-
 bulk_discount=subtotal*0.08*(book_number>=10)
 total_discounts = main_discount + bulk_discount
 small_order_fee=(book_number<3)*10000
@@ -65,7 +63,6 @@ print("Tax:", tax_fee)
 print("Shipping:", shipping)
 print("Final total:", final_total)
 print("Net savings:", net_savings)
-
 
 
 
