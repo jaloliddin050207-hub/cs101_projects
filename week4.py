@@ -96,7 +96,7 @@ def generate_quality_report(agent_name, ticket_type, tickets, priority_level, ag
 
 # --- Print header once ---
 print("CUSTOMER SERVICE QUALITY MONITOR")
-print("========================================")
 generate_quality_report("Harper", "technical", 45, "high", 3, 800, 1150, 3)
 generate_quality_report("Indigo", "billing", 60, "medium", 5, 900, 1300, 5)
 generate_quality_report("Jesse", "general", 30, "low", 8, 850, 950, 7)
+
