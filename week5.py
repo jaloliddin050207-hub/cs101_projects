@@ -7,44 +7,54 @@ def find_section_index(section_names, section_name):
 def process_bookings(initial_sections, initial_seats, operations):
     c_sections = initial_sections[:]
     c_seats = initial_seats[:]
-    c_o = operations[:]
 
-    result_text = "Initial state:\n"
-    result_text += f"  Sections: {initial_sections}\n"
-    result_text += f"  Seats: {initial_seats}\n"
-    result_text += "\nProcessing operations:\n"
 
-    for sublist in c_o:
-        if sublist[0] == 'ADD_SECTION':
-            index = find_section_index(c_sections, sublist[1])
+    for operation in operations:
+        command = operation[0]
+        section = operation[1]
+        num = operation[2]
+
+        if command == "ADD_SECTION":
+            index = find_section_index(c_sections, section)
             if index == -1:
-                c_sections.append(sublist[1])
-                c_seats.append(sublist[2])
-                result_text += f"ADD_SECTION {sublist[1]} {sublist[2]}: Added new section\n"
-        elif sublist[0] == 'BOOK':
-            index = find_section_index(c_sections, sublist[1])
+                c_sections.append(section)
+                c_seats.append(num)
+                print(f"{command} {section} {num}: Added new section")
+            else:
+                print(f"{command} {section} {num}: Section already exists")
+
+        elif command == "BOOK":
+            index = find_section_index(c_sections, section)
             if index != -1:
-                if c_seats[index] >= sublist[2]:
-                    result_text += f"BOOK {sublist[1]} {sublist[2]}: {c_seats[index]} -> {c_seats[index] - sublist[2]}\n"
-                    c_seats[index] -= sublist[2]
+                if c_seats[index] >= num:
+                    old = c_seats[index]
+                    c_seats[index] -= num
+                    print(f"{command} {section} {num}: {old} -> {c_seats[index]}")
                 else:
-                    result_text += f"BOOK {sublist[1]} {sublist[2]}: Failed (only {c_seats[index]} available)\n"
-        elif sublist[0] == 'CANCEL':
-            index = find_section_index(c_sections, sublist[1])
+                    print(f"{command} {section} {num}: Failed (only {c_seats[index]} available)")
+            else:
+                print(f"{command} {section} {num}: Failed (section not found)")
+
+        elif command == "CANCEL":
+            index = find_section_index(c_sections, section)
             if index != -1:
-                result_text += f"CANCEL {sublist[1]} {sublist[2]}: {c_seats[index]} -> {c_seats[index] + sublist[2]}\n"
-                c_seats[index] += sublist[2]
+                old = c_seats[index]
+                c_seats[index] += num
+                print(f"{command} {section} {num}: {old} -> {c_seats[index]}")
+            else:
+                print(f"{command} {section} {num}: Failed (section not found)")
+    print("Initial state:")
+    print("  Sections:", c_sections)
+    print("  Seats:", c_seats)
+    print("\nProcessing operations:")
+    print("\nFinal state:")
+    print("  Sections:", c_sections)
+    print("  Seats:", c_seats)
 
-    result_text += "\nFinal state:\n"
-    result_text += f"  Sections: {c_sections}\n"
-    result_text += f"  Seats: {c_seats}\n"
+    return c_sections, c_seats
 
-    print(result_text)
 
-    final_section_names_list = c_sections
-    final_seats_available_list = c_seats
-    return final_section_names_list, final_seats_available_list
-
+# Test data
 sections = ["Orchestra", "Mezzanine", "Balcony"]
 seats = [50, 75, 100]
 booking_operations = [
@@ -56,8 +66,3 @@ booking_operations = [
 ]
 
 final_sections, final_seats = process_bookings(sections, seats, booking_operations)
-
-
-            
-
-
