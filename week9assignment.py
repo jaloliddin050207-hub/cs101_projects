@@ -21,11 +21,11 @@ def calculate_quote(quote_text):
 
             subtotal = subtotal + (hours * rate)
 
-        elif "CREDIT:" in line:
+        if "CREDIT:" in line:
             amount = line.replace("CREDIT: $", "")
             credit = float(amount)
 
-        elif "SURCHARGE:" in line:
+        if "SURCHARGE:" in line:
             percent_text = line.replace("SURCHARGE:", "")
             percent_text = percent_text.replace("%", "")
             percent = float(percent_text)
@@ -54,4 +54,5 @@ quote3 = """Testing : 10 hrs x $30.00/hr
 Docs : 5 hrs x $20.00/hr
 CREDIT: $50.00
 SURCHARGE: 0%"""
+
 print(calculate_quote(quote3))
