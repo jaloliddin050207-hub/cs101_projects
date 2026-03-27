@@ -1,77 +1,71 @@
-def calculate_price_per_ticket(event_tuple):
-    (event_id, artist, tickets_sold, revenue) = event_tuple
-    return revenue / tickets_sold
+def track_change(func):
+    def wrapper(*args,**kwargs):
+        result=func(*args,**kwargs)
+        print(f"[STOCK] {result}")
+        return result
+    return wrapper
 
-def find_top_earning_event(events):
-    top_event_id = events[0][0] 
-    top_revenue = events[0][3]
+class Product:
+    _all_products=[]
+    def __init__(self,name,price,quantity):
+        self.name=name
+        self.price=float(price)
+        self.quantity=int(quantity)
+        Product._all_products.append(self)
 
-    for event in events:
-        event_id = event[0]
-        revenue = event[3]
+    @track_change
+    def restock(self,amount):
+        self.quantity +=amount
+        return f"{self.name}: added {amount}, now {self.quantity}"
+    
+    @track_change
+    def sell(self,amount):
+        if amount >self.quantity:
+            return f"Not enough {self.name} in stock"
+        self.quantity -=amount
+        return f"{self.name}: sold {amount}, now {self.quantity}"
+    
+    def total_value(self):
+        return float(round(self.price*self.quantity,2))
 
-        if revenue > top_revenue:
-            top_revenue = revenue
-            top_event_id = event_id
+    @classmethod
+    def from_catalog(cls, entry):
+        name,price,quantity=entry.split(":")
+        return cls(name,float(price), int(quantity))
+    @staticmethod
+    def is_valid_code(code):
+        if code[:4] != "PRD-":
+          
+          return False
+        for ch in code[4:]:  
+          if ch < '0' or ch > '9':
+              return False
+        return True
+    
+    @classmethod
+    def warehouse_value(cls):
+        total = sum(product.total_value() for product in cls._all_products)
+        return float(round(total,2))
+        
+p1 = Product("Keyboard", 45.50, 20)
+p2 = Product.from_catalog("Monitor:299.99:5")
 
-        elif revenue == top_revenue:
-            if event_id < top_event_id:
-                top_event_id = event_id
+p1.restock(10)
+p1.sell(25)
+p1.sell(50)
+p2.sell(2)
 
-    return top_event_id
+print(f"{p1.name}: value = ${p1.total_value()}")
+print(f"{p2.name}: value = ${p2.total_value()}")
 
-def get_events_by_artist(events, artist_name):
-    event_ids = []
+print(f"Valid code 'PRD-001': {Product.is_valid_code('PRD-001')}")
+print(f"Valid code 'ABC-123': {Product.is_valid_code('ABC-123')}")
+print(f"Warehouse total: ${Product.warehouse_value()}")
 
-    for event in events:
-        if event[1] == artist_name:
-            event_ids.append(event[0])
-
-    event_ids.sort()
-    return event_ids
-
-def get_artist_sales_summary(events):
-    artists = []                
-    totals = []    
-
-    for event in events:
-        artist = event[1]
-        tickets = event[2]
-
-        found_i= -1
-        for i in range(len(artists)):
-            if artists[i] == artist:
-                found_i = i
-                break
-
-        if found_i == -1:
-            artists.append(artist)
-            totals.append(tickets)
-        else:
-            totals[found_i] += tickets
-
-    summary = []
-    for i in range(len(artists)):
-        summary.append((artists[i], totals[i]))
-
-    summary.sort()
-
-    return summary
-
-def analyze_ticket_sales(events):
-    top_event = find_top_earning_event(events)
-    imagine_d_e = get_events_by_artist(events, "Imagine Dragons")
-    artist_summary = get_artist_sales_summary(events)
-
-    return (top_event, imagine_d_e, artist_summary)
+             
 
 
-events = [
-    ('EV101', 'The Killers', 5000, 375000),
-    ('EV205', 'Imagine Dragons', 8000, 600000),
-    ('EV102', 'The Killers', 4500, 360000),
-    ('EV301', 'Coldplay', 10000, 950000),
-    ('EV206', 'Imagine Dragons', 8500, 680000)
-]
+    
 
-print(analyze_ticket_sales(events))
+
+
