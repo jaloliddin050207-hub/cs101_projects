@@ -1,33 +1,37 @@
-from dataclasses import dataclass,field
+from dataclasses import dataclass, field
+
 @dataclass
 class Tool:
     name: str
-    rate : float
-    hours:int
-    def cost(self) ->float:
-        return round(self.rate*self.hours,2)
+    rate: float
+    hours: int
+
+    def cost(self) -> float:
+        return round(self.rate * self.hours, 2)
+
+
 @dataclass
 class Workshop:
-    name : str
-    tools: list[Tool]=field(default_factory=list)
-    total_cost:float=field(init=False)
+    name: str
+    tools: list[Tool] = field(default_factory=list)
+    total_cost: float = field(init=False)
+
     def __post_init__(self):
-        self.refresh()
-    
-    def refresh(self):
         self.total_cost = round(sum(tool.cost() for tool in self.tools), 2)
 
-    def add_tool(self,tool:Tool) :
+    def _update_total(self):
+        self.total_cost = round(sum(tool.cost() for tool in self.tools), 2)
+
+    def add_tool(self, tool: Tool):
         self.tools.append(tool)
-        self.refresh()
+        self._update_total()
 
-    def use(self,tool_name:str, hrs:int) ->bool:
-
+    def use(self, tool_name: str, hrs: int) -> bool:
         for tool in self.tools:
             if tool.name == tool_name:
                 if tool.hours >= hrs:
                     tool.hours -= hrs
-                    self.refresh()
+                    self._update_total()
                     return True
                 return False
         return False
@@ -36,7 +40,7 @@ class Workshop:
         for tool in self.tools:
             if tool.name == tool_name:
                 tool.hours += hrs
-                self.refresh()
+                self._update_total()
                 return
 
     def report(self) -> str:
