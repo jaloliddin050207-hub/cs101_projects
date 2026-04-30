@@ -1,63 +1,90 @@
-def redeem_prize(players_db, prize_catalog, player_id, item_name, quantity):
+from dataclasses import dataclass, field
+from contextlib import contextmanager
 
-    if player_id not in players_db:
-        raise KeyError("Player not found")
-    if item_name  not in prize_catalog:
-        raise KeyError("Prize not available")
-    if quantity != int(quantity) or quantity < 1:
-        raise ValueError("Quantity must be positive integer")
-    ticket_cost = prize_catalog[item_name]["cost"]
-    total_cost = quantity * ticket_cost
+class TicketError(Exception):
+    pass
 
-    if quantity >= 3:
-        total_cost -= 100
-        if total_cost < 0:
-            total_cost = 0
+@dataclass
+class Ticket:
+    title: str
+    genre: str
+    price: float
+    _status: str = field(default="PENDING", init=False)
 
-    if players_db[player_id]["tickets"] < total_cost:
-        raise ValueError("Not enough tickets")
+    def __post_init__(self):
+        if self.price <= 0:
+            raise TicketError(f"Invalid price for {self.title}")
 
-    players_db[player_id]["tickets"] -= total_cost
-    return total_cost
+    @property
+    def is_premium(self):
+        return self.price > 15.0
 
-def process_redemptions(players_db, prize_catalog, queue):
-    tickets_spent = 0
-    failed_redemptions = 0
+    def __str__(self):
+        return f"{self.title} ({self.genre}, ${self.price}) [{self._status}]"
 
-    for player_id, item_name, quantity in queue:
-        try:
-            tickets_spent += redeem_prize(players_db, prize_catalog, player_id, item_name, quantity)
-        except (KeyError, ValueError) as e:
-            print(f"Redemption Error for {player_id}: {e}")
-            failed_redemptions += 1
+    def __gt__(self, other):
+        return self.price > other.price
 
-    return {'tickets_spent': tickets_spent, 'failed_redemptions': failed_redemptions}
+class ShowScanner:
+    def __init__(self, tickets, genres):
+        self.tickets = tickets
+        self.genres = genres
+        self.index = 0
 
-# Data
-prizes = {
-    "Bear": {"cost": 500},
-    "Candy": {"cost": 50}
-}
+    def __iter__(self):
+        return self
 
-players = {
-    "P1": {"tickets": 1000},
-    "P2": {"tickets": 100}
-}
+    def __next__(self):
+        if self.index >= len(self.tickets):
+            raise StopIteration
 
-queue = [
-    ("P1", "Candy", 4),
-    ("P2", "Bear", 1),
-    ("P9", "Toy", 1),
-    ("P1", "PS5", 1),
-    ("P1", "Bear", 0)
-]
+        ticket = self.tickets[self.index]
 
-result = process_redemptions(players, prizes, queue)
-print(result) 
+        if ticket.genre in self.genres:
+            ticket._status = "ON SALE"
+        else:
+            ticket._status = "SOLD OUT"
 
+        self.index += 1
+        return ticket
 
+def show_report(scanner):
+    on_sale = 0
+    sold_out = 0
 
+    for ticket in scanner:
+        if ticket._status == "ON SALE":
+            on_sale += 1
+        else:
+            sold_out += 1
 
+        yield str(ticket)
 
-    
-          
+    yield f"Report: {on_sale} on sale, {sold_out} sold out"
+
+@contextmanager
+def box_office(name):
+    tickets = []
+    print(f">>> Showing: {name}")
+
+    try:
+        yield tickets
+    except TicketError as e:
+        print(f"!!! Error: {e}")
+    finally:
+        print(f"<<< Ended: {name} ({len(tickets)} tickets)")
+
+with box_office("Friday Night") as tickets:
+    tickets.append(Ticket("Inception", "Sci-Fi", 12.5))
+    tickets.append(Ticket("The Godfather", "Drama", 15.0))
+    tickets.append(Ticket("Barbie", "Comedy", 9.99))
+
+    for line in show_report(ShowScanner(tickets, ("Sci-Fi", "Drama"))):
+        print(line)
+
+    print(tickets[1] > tickets[0])
+
+print()
+
+with box_office("Saturday Night") as tickets:
+    tickets.append(Ticket("Avatar", "Sci-Fi", -5.0))
