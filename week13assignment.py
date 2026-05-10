@@ -1,67 +1,73 @@
-import requests
+from abc import ABC,abstractmethod
+class Visit(ABC):
+    def __init__(self,patient):
+        self.patient=patient
+    @abstractmethod
+    def charge(self):
+        ...
+class Checkup(Visit):
+    def charge(self):
+        return 80_000
 
-def fetch_shows(search_term):
-    url = f"https://api.tvmaze.com/search/shows?q={search_term}"
-    response = requests.get(url)
+class Surgery(Visit):
+    def charge(self):
+        return 2_000_000
 
-    if response.status_code == 200:
-        return response.json()
-    else:
-        response.raise_for_status()
+class Consult(Visit):
+    def charge(self):
+        return 150_000
 
-def get_rating(show):
-    return show["rating"]["average"] if show["rating"]["average"] else 0
+class Checkup(Visit):
+    def charge(self):
+        return 80_000
 
-def save_to_file(shows):
-    with open("tv_shows_results.txt", "w") as file:
-        file.write("Top TV Show Results\n")
-        file.write("=" * 30 + "\n\n")
-        for show in shows:
-            file.write(f"Title: {show['name']}\n")
-            file.write(f"Rating: {show['rating']['average'] if show['rating']['average'] else 'N/A'}\n")
-            genres = ", ".join(show["genres"]) if show["genres"] else "N/A"
-            file.write(f"Genres: {genres}\n")
-            file.write("-" * 30 + "\n")
-    print("\n📁 Results saved to 'tv_shows_results.txt'")
+class Surgery(Visit):
+    def charge(self):
+        return 2_000_000
 
-def main():
-    print("🎬 Welcome to TV Show Finder")
+class BillingSystem:
+    def __init__(self):
+        self.visits = []
+    def add(self, visit: Visit):
+        self.visits.append((visit))
+    def run(self,invoice,caller):
+        invoice.export(self.visits)
+        caller.call(self.visits)
 
-    try:
-        search_term = input("Enter a TV show name: ").strip()
-        if not search_term:
-            raise ValueError("Search term cannot be empty.")
 
-        min_rating = float(input("Enter minimum rating (0 to 10): "))
-        if min_rating < 0 or min_rating > 10:
-            raise ValueError("Rating must be between 0 and 10.")
 
-        results = fetch_shows(search_term)
-        if not results:
-            print("No shows found for this keyword.")
-            return
+class Invoice(ABC):
+    @abstractmethod
+    def export(self,visits):
+        ...
 
-        filtered_shows = [item["show"] for item in results
-                          if get_rating(item["show"]) >= min_rating]
+class TextInvoice(Invoice):
+    def export(self,visits):
+        for visit in visits:
+            print(f"INVOICE #{visit.patient}: {visit.charge()} CAD")
 
-        if not filtered_shows:
-            print("No shows matched your rating criteria.")
-            return
+class Caller(ABC):
+    @abstractmethod
+    def call(self,visits):
+        ...
+class PhoneCaller(Caller):
+    def call(self,visits):
+        for visit in visits:
+            print(f"[CALL → {visit.patient}] Please pay {visit.charge()} CAD")
 
-        filtered_shows.sort(key=get_rating, reverse=True)
-        top_shows = filtered_shows[:5]
+hospital = BillingSystem()
+hospital.add(Checkup("Albus"))
+hospital.add(Surgery("Severus"))
+hospital.add(Consult("Draco"))
 
-        print("\n⭐ Top Matching Shows:\n")
-        for show in top_shows:
-            print(f"Title: {show['name']}")
-            print(f"Rating: {show['rating']['average'] if show['rating']['average'] else 'N/A'}")
-            print(f"Genres: {', '.join(show['genres']) if show['genres'] else 'N/A'}")
-            print("-" * 30)
+hospital.run(TextInvoice(), PhoneCaller())
 
-        save_to_file(top_shows)
 
-    except ValueError as error:
-        print(" Input error:", error)
-    except Exception as error:
-        print(" Unexpected error:", error)
-main()
+
+
+
+
+
+    
+
+
